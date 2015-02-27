@@ -1,0 +1,24 @@
+#!/bin/sh -e
+
+version="$1"
+boot_dir=$(dirname "$2")
+
+config_file="$boot_dir/config.txt"
+
+if [ -f $config_file ] ; then
+    # test whether kernel parameter is present
+    if grep -l 'kernel=' $config_file >/dev/null ; then
+        sed -i "s/kernel=.*/kernel=vmlinuz-$version/" $config_file
+    else
+        echo "\nkernel=vmlinuz-$version" >> $config_file
+    fi
+else
+    echo "kernel=vmlinuz-$version" > $config_file
+fi
+
+# test whether initramfs parameter is present
+if grep -l 'initramfs' $config_file >/dev/null ; then
+    sed -i "s/initramfs.*/initramfs initrd.img-$version followkernel/" $config_file
+else
+    echo "\ninitramfs initrd.img-$version followkernel" >> $config_file
+fi
